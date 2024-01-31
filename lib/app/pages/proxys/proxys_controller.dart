@@ -4,13 +4,15 @@ import 'package:clash_for_flutter/app/bean/group_bean.dart';
 import 'package:clash_for_flutter/app/enum/type_enum.dart';
 import 'package:clash_for_flutter/app/pages/proxys/model/proxie_show_bean.dart';
 import 'package:clash_for_flutter/app/pages/proxys/model/proxys_model.dart';
-import 'package:clash_for_flutter/app/source/global_config.dart';
+import 'package:clash_for_flutter/app/source/core_config.dart';
+import 'package:clash_for_flutter/app/source/app_config.dart';
 import 'package:clash_for_flutter/app/source/request.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
 class ProxysController {
   final _request = Modular.get<Request>();
-  final _config = Modular.get<GlobalConfig>();
+  final _config = Modular.get<AppConfig>();
+  final _core = Modular.get<CoreConfig>();
   final model = Modular.get<ProxysModel>();
 
   Future<void> initState() async {
@@ -36,7 +38,7 @@ class ProxysController {
     }
 
     // 全局代理时
-    if (_config.clashConfig.mode == Mode.Global) {
+    if (_core.clash.mode == Mode.Global) {
       groupList = [global, ...groupList];
     }
 

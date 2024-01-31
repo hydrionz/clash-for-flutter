@@ -8,6 +8,8 @@ import 'package:dart_json_mapper/dart_json_mapper.dart';
 /// 软件配置
 @JsonSerializable()
 class ClashForMeConfig {
+  static final File _file = File("${Constants.homeDir.path}${Constants.clashForMe}");
+
   /// 选择的配置文件
   @JsonProperty(name: "selected-file")
   String? selectedFile;
@@ -23,11 +25,16 @@ class ClashForMeConfig {
   @JsonProperty(name: "delay-test-url")
   String delayTestUrl;
 
+  /// 是否以 Tun 模式运行
+  @JsonProperty(name: "tun-if")
+  bool? tunIf;
+
   ClashForMeConfig({
     this.selectedFile,
     required this.profiles,
     required this.mmdbUrl,
     required this.delayTestUrl,
+    this.tunIf,
   });
 
   ClashForMeConfig copyWith({
@@ -35,12 +42,14 @@ class ClashForMeConfig {
     List<ProfileBase>? profiles,
     String? mmdbUrl,
     String? delayTestUrl,
+    bool? tunIf,
   }) {
     var config = ClashForMeConfig(
       selectedFile: selectedFile ?? this.selectedFile,
       profiles: profiles ?? this.profiles,
       mmdbUrl: mmdbUrl ?? this.mmdbUrl,
       delayTestUrl: delayTestUrl ?? this.delayTestUrl,
+      tunIf: tunIf ?? this.tunIf,
     );
     // 对当前选择的订阅进行优化
     var selectElements = config.profiles.where((e) => e.file == config.selectedFile);
@@ -54,8 +63,8 @@ class ClashForMeConfig {
     return config;
   }
 
-  Future<void> saveFile(String path) {
-    return File(path).create(recursive: true).then((file) => file.writeAsString(JsonMapper.serialize(this)));
+  Future<void> saveFile() {
+    return _file.create(recursive: true).then((file) => file.writeAsString(JsonMapper.serialize(this)));
   }
 
   factory ClashForMeConfig.defaultConfig() => ClashForMeConfig(
@@ -64,8 +73,8 @@ class ClashForMeConfig {
         delayTestUrl: DefaultConfigValue.delayTestUrl,
       );
 
-  factory ClashForMeConfig.formYamlFile(String path) {
-    var clashForMeFile = File(path);
+  factory ClashForMeConfig.formFile() {
+    var clashForMeFile = _file;
     if (clashForMeFile.existsSync()) {
       Map<String, dynamic> cfm = json.decode(clashForMeFile.readAsStringSync());
 

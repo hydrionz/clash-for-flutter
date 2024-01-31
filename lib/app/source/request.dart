@@ -18,9 +18,9 @@ import 'package:dio/dio.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class Request {
-  final _clashDio = Dio(
+  final Dio _clashDio = Dio(
     BaseOptions(
-      baseUrl: "http://${Constants.localhost}:${Constants.port}",
+      baseUrl: "http://${Constants.rustAddr}",
       connectTimeout: const Duration(seconds: 3),
       receiveTimeout: const Duration(seconds: 5),
     ),
@@ -28,7 +28,7 @@ class Request {
 
   final _dio = Dio(
     BaseOptions(
-      headers: {'User-Agent': 'Clash For Flutter'},
+      headers: {'User-Agent': 'Clash for Flutter'},
       connectTimeout: const Duration(seconds: 3),
     ),
   );
@@ -91,6 +91,10 @@ class Request {
         ..time = time
         ..file = file;
     });
+  }
+
+  Future<Response> hello() async {
+    return _clashDio.get("/");
   }
 
   /// 获取所有代理
@@ -163,18 +167,18 @@ class Request {
   }
 
   Stream<NetSpeed?> traffic() {
-    var channel = WebSocketChannel.connect(Uri.parse("ws://${Constants.localhost}:${Constants.port}/traffic"));
+    var channel = WebSocketChannel.connect(Uri.parse("ws://${Constants.rustAddr}/traffic"));
     return channel.stream.map((event) => JsonMapper.deserialize<NetSpeed>(event));
   }
 
   Stream<LogData?> logs(LogLevel? level) {
-    var uri = Uri.parse("ws://${Constants.localhost}:${Constants.port}/logs?level=${level?.value ?? ""}");
+    var uri = Uri.parse("ws://${Constants.rustAddr}/logs?level=${level?.value ?? ""}");
     var channel = WebSocketChannel.connect(uri);
     return channel.stream.map((event) => JsonMapper.deserialize<LogData>(event)?..time = DateTime.now());
   }
 
   Stream<Snapshot?> connections() {
-    var channel = WebSocketChannel.connect(Uri.parse("ws://${Constants.localhost}:${Constants.port}/connections"));
+    var channel = WebSocketChannel.connect(Uri.parse("ws://${Constants.rustAddr}/connections"));
     return channel.stream.map((event) => JsonMapper.deserialize<Snapshot>(event));
   }
 

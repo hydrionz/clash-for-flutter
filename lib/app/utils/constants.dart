@@ -1,7 +1,15 @@
-import 'dart:math';
+import 'dart:io';
 
 /// 常量类
 class Constants {
+  static final isDesktop = Platform.isMacOS || Platform.isWindows || Platform.isLinux;
+
+  /// rust 控制服务地址
+  static late final String rustAddr;
+
+  /// 配置目录
+  static late final Directory homeDir;
+
   /// 开源地址
   static const sourceUrl = "https://github.com/mapleafgo/clash-for-flutter";
 
@@ -26,10 +34,8 @@ class Constants {
   /// mmdb 更新保存路径
   static const mmdb_new = "/Country_new.mmdb";
 
+  /// localhost
   static const localhost = "127.0.0.1";
-
-  /// 采用随机端口
-  static final port = Random().nextInt(1000) + 10000;
 
   /// 日志最大容量
   static const logsCapacity = 1000;

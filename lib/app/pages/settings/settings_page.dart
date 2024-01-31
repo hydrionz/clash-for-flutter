@@ -1,9 +1,8 @@
-import 'dart:io';
-
 import 'package:asuka/asuka.dart' hide showDialog;
 import 'package:clash_for_flutter/app/component/sys_app_bar.dart';
 import 'package:clash_for_flutter/app/enum/type_enum.dart';
-import 'package:clash_for_flutter/app/source/global_config.dart';
+import 'package:clash_for_flutter/app/source/app_config.dart';
+import 'package:clash_for_flutter/app/source/core_config.dart';
 import 'package:clash_for_flutter/app/source/request.dart';
 import 'package:clash_for_flutter/app/utils/constants.dart';
 import 'package:flutter/material.dart';
@@ -22,7 +21,8 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  final _config = Modular.get<GlobalConfig>();
+  final _config = Modular.get<AppConfig>();
+  final _core = Modular.get<CoreConfig>();
   final _request = Modular.get<Request>();
   String _version = "1.2.0";
 
@@ -99,7 +99,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   selectMode() {
     change(Mode? mode, BuildContext context) {
-      _config.setState(mode: mode);
+      _core.setState(mode: mode);
       Navigator.of(context).pop();
     }
 
@@ -122,7 +122,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 title: Text(Mode.values[i].value),
                 trailing: Radio<Mode>(
                   value: Mode.values[i],
-                  groupValue: _config.clashConfig.mode ?? Mode.Rule,
+                  groupValue: _core.clash.mode ?? Mode.Rule,
                   onChanged: (v) => change(v, cxt),
                 ),
               );
@@ -135,7 +135,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   selectLogLevel() {
     change(LogLevel? logLevel, BuildContext context) {
-      _config.setState(logLevel: logLevel);
+      _core.setState(logLevel: logLevel);
       Navigator.of(context).pop();
     }
 
@@ -158,7 +158,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 title: Text(LogLevel.values[i].value.toUpperCase()),
                 trailing: Radio<LogLevel>(
                   value: LogLevel.values[i],
-                  groupValue: _config.clashConfig.logLevel ?? LogLevel.info,
+                  groupValue: _core.clash.logLevel ?? LogLevel.info,
                   onChanged: (v) => change(v, cxt),
                 ),
               );
@@ -174,16 +174,14 @@ class _SettingsPageState extends State<SettingsPage> {
     return Scaffold(
       appBar: const SysAppBar(title: Text("设置")),
       body: Observer(builder: (_) {
-        var port = _config.clashConfig.port ?? 0;
-        var socksPort = _config.clashConfig.socksPort ?? 0;
-        var redirPort = _config.clashConfig.redirPort ?? 0;
-        var tproxyPort = _config.clashConfig.tproxyPort ?? 0;
-        var mixedPort = _config.clashConfig.mixedPort ?? 0;
+        var redirPort = _core.clash.redirPort ?? 0;
+        var tproxyPort = _core.clash.tproxyPort ?? 0;
+        var mixedPort = _core.clash.mixedPort ?? 0;
 
-        var allowLan = _config.clashConfig.allowLan ?? false;
-        var ipv6 = _config.clashConfig.ipv6 ?? false;
-        var mode = _config.clashConfig.mode ?? Mode.Rule;
-        var logLevel = _config.clashConfig.logLevel ?? LogLevel.info;
+        var allowLan = _core.clash.allowLan ?? false;
+        var ipv6 = _core.clash.ipv6 ?? false;
+        var mode = _core.clash.mode ?? Mode.Rule;
+        var logLevel = _core.clash.logLevel ?? LogLevel.info;
 
         var mmdbUrl = _config.clashForMe.mmdbUrl;
         var delayTestUrl = _config.clashForMe.delayTestUrl;
@@ -195,24 +193,13 @@ class _SettingsPageState extends State<SettingsPage> {
               title: const Text('Clash 代理端口'),
               tiles: <SettingsTile>[
                 SettingsTile.navigation(
-                  title: const Text('Http & Https'),
-                  value: Text(port.toString()),
+                  title: const Text('Http & Socks'),
+                  value: Text(mixedPort.toString()),
                   onPressed: (_) {
                     setValue(
-                      title: "Http & Https",
-                      initialValue: port.toString(),
-                      onOk: (v) => _config.setState(port: int.parse(v)),
-                    );
-                  },
-                ),
-                SettingsTile.navigation(
-                  title: const Text('Socks'),
-                  value: Text(socksPort.toString()),
-                  onPressed: (_) {
-                    setValue(
-                      title: "Socks",
-                      initialValue: socksPort.toString(),
-                      onOk: (v) => _config.setState(socksPort: int.parse(v)),
+                      title: "Mixed",
+                      initialValue: mixedPort.toString(),
+                      onOk: (v) => _core.setState(mixedPort: int.parse(v)),
                     );
                   },
                 ),
@@ -223,7 +210,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     setValue(
                       title: "Redir",
                       initialValue: redirPort.toString(),
-                      onOk: (v) => _config.setState(redirPort: int.parse(v)),
+                      onOk: (v) => _core.setState(redirPort: int.parse(v)),
                     );
                   },
                 ),
@@ -234,18 +221,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     setValue(
                       title: "Tproxy",
                       initialValue: tproxyPort.toString(),
-                      onOk: (v) => _config.setState(tproxyPort: int.parse(v)),
-                    );
-                  },
-                ),
-                SettingsTile.navigation(
-                  title: const Text('Mixed'),
-                  value: Text(mixedPort.toString()),
-                  onPressed: (_) {
-                    setValue(
-                      title: "Mixed",
-                      initialValue: mixedPort.toString(),
-                      onOk: (v) => _config.setState(mixedPort: int.parse(v)),
+                      onOk: (v) => _core.setState(tproxyPort: int.parse(v)),
                     );
                   },
                 ),
@@ -257,12 +233,12 @@ class _SettingsPageState extends State<SettingsPage> {
                 SettingsTile.switchTile(
                   title: const Text("允许局域网"),
                   initialValue: allowLan,
-                  onToggle: (v) => _config.setState(allowLan: v),
+                  onToggle: (v) => _core.setState(allowLan: v),
                 ),
                 SettingsTile.switchTile(
                   title: const Text("IPv6"),
                   initialValue: ipv6,
-                  onToggle: (v) => _config.setState(ipv6: v),
+                  onToggle: (v) => _core.setState(ipv6: v),
                 ),
                 SettingsTile.navigation(
                   title: const Text('代理模式'),
@@ -315,12 +291,12 @@ class _SettingsPageState extends State<SettingsPage> {
               tiles: [
                 SettingsTile.navigation(
                   title: const Text("官网"),
-                  value: const Text(Constants.homeUrl),
+                  value: const Text(Constants.homeUrl, overflow: TextOverflow.ellipsis),
                   onPressed: (_) => launchUrl(Uri.parse(Constants.homeUrl)),
                 ),
                 SettingsTile.navigation(
                   title: const Text("开源地址"),
-                  value: const Text(Constants.sourceUrl),
+                  value: const Text(Constants.sourceUrl, overflow: TextOverflow.ellipsis),
                   onPressed: (_) => launchUrl(Uri.parse(Constants.sourceUrl)),
                 ),
                 SettingsTile.navigation(
@@ -346,7 +322,7 @@ class MmdbRefreshButton extends StatefulWidget {
 }
 
 class _MmdbRefreshButtonState extends State<MmdbRefreshButton> {
-  final _config = Modular.get<GlobalConfig>();
+  final _config = Modular.get<AppConfig>();
   final _request = Modular.get<Request>();
 
   double _value = 0;
@@ -360,11 +336,10 @@ class _MmdbRefreshButtonState extends State<MmdbRefreshButton> {
       }
       return;
     }
-    var mmdb = File("${_config.configDir.path}${Constants.mmdb_new}");
     _request
         .downFile(
       urlPath: _config.clashForMe.mmdbUrl,
-      savePath: mmdb.path,
+      savePath: "${Constants.homeDir.path}${Constants.mmdb}",
       onReceiveProgress: (received, total) {
         setState(() => _value = received / total);
       },
